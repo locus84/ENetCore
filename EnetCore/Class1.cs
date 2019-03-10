@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EnetCore
+namespace ENetCore
 {
     public class Class1
     {
