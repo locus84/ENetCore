@@ -915,17 +915,27 @@ namespace ENetCore
 
             var header = ENetUtil.ReadStructure<ENetProtocolHeader>(receivedData);
 
+            //temporary set peer id
             ushort peerID = ENetUtil.NetToHost(header.peerID);
+
+            //mask session id and shift to it's original value
             byte sessionID = (byte)((peerID & (int)ENetProtocolFlag.HEADER_SESSION_MASK) >> (int)ENetProtocolFlag.HEADER_SESSION_SHIFT);
+
+            //retrive flag using flag mask
             ushort flags = (ushort)(peerID & (uint)ENetProtocolFlag.HEADER_FLAG_MASK);
+
+            //now set peer id (valid value)
             peerID = (ushort)(peerID & (uint)ENetProtocolFlag.PEER_ID_MASK);
 
+            //check if there's send time data. if not, header is only 2 byte
             int headerSize = (flags & (uint)ENetProtocolFlag.HEADER_FLAG_SENT_TIME) > 0 ? SizeOf<ENetProtocolHeader>.Value : 2;
 
+            //if checksum delegate is not null prepare checksum value storage
             if(checksum != null)
                 headerSize += sizeof(uint);
 
             ENetPeer peer;
+
 
             if (peerID == (ushort)ENetProtocolConstant.MAXIMUM_PEER_ID)
                 peer = null;
@@ -933,11 +943,25 @@ namespace ENetCore
                 return 0;
             else
             {
+                //we id is valid
                 peer = peers[peerID];
 
+                //check if the peer is valid one. if not, return
                 if (peer.state == ENetPeerState.ENET_PEER_STATE_DISCONNECTED || peer.state == ENetPeerState.ENET_PEER_STATE_ZOMBIE ||
                     receivedAddress != peer.address || (peer.outgoingPeerID < (ushort)ENetProtocolConstant.MAXIMUM_PEER_ID && sessionID != peer.incomingSessionID))
                     return 0;
+            }
+
+            //if the messaged compressed?
+            if ((flags & (uint)ENetProtocolFlag.HEADER_FLAG_COMPRESSED) > 0)
+            { 
+                int originalSize;
+                // message is compressed but there's no compressor
+                if (compressor == null)
+                    return 0;
+
+                //inbuffer??? what to do?
+                originalSize = compressor.compress(receivedData.)
             }
 
             //continue...

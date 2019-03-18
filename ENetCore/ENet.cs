@@ -111,19 +111,20 @@ namespace ENetCore
 
 
     /** An ENet packet compressor for compressing UDP packets before socket sends or receives. */
-    public unsafe struct ENetCompressor
+    public class ENetCompressor
     {
-        /** Context data for the compressor. Must be non-NULL. */
-        void* context;
+        public compressdelegate compress;
+        public decompressdelegate decompress;
+        public destroydelegate destroy;
 
         /** Compresses from inBuffers[0:inBufferCount-1], containing inLimit bytes, to outData, outputting at most outLimit bytes. Should return 0 on failure. */
-        delegate int compress(void* context, ENetBuffer inBuffers, int inBufferCount, int inLimit, byte[] outData, int outLimit);
+        public delegate int compressdelegate(ENetBuffer inBuffers, int inBufferCount, int inLimit, byte[] outData, int outLimit);
 
         /** Decompresses from inData, containing inLimit bytes, to outData, outputting at most outLimit bytes. Should return 0 on failure. */
-        delegate int decompress(void* context, byte[] inData, int inLimit, byte[] outData, int outLimit);
+        public delegate int decompressdelegate(byte[] inData, int inLimit, byte[] outData, int outLimit);
 
         /** Destroys the context when compression is disabled or the host is destroyed. May be NULL. */
-        delegate void destroy(void* context);
+        public delegate void destroydelegate();
     }
 
     ///** Callback that computes the checksum of the data held in buffers[0:bufferCount-1] */
